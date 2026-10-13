@@ -1,0 +1,41 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1791821308848,
+      "tag": "0000_military_mysterio",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1791821597266,
+      "tag": "0001_silent_tana_nile",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1791826774129,
+      "tag": "0002_rich_pepper_potts",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1791835539077,
+      "tag": "0003_fuzzy_chat",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1791836927152,
+      "tag": "0004_condemned_the_executioner",
+      "breakpoints": true
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+ALTER TABLE `api_keys` ADD `development_only` integer DEFAULT true NOT NULL;

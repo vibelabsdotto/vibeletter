@@ -1,0 +1,59 @@
+name: vibeletter
+
+x-runtime: &runtime
+  image: vibeletter:local
+  build:
+    context: .
+    target: runtime
+  env_file:
+    - .env.production
+  environment:
+    NODE_ENV: production
+    DEV_LOGIN_ENABLED: "false"
+    DATABASE_PATH: /app/data/vibeletter.db
+    QUEUE_DATABASE_PATH: /app/data/queue.db
+  volumes:
+    - data:/app/data
+  init: true
+  security_opt:
+    - no-new-privileges:true
+  cap_drop:
+    - ALL
+
+services:
+  # Official application and queue migrations run before either process.
+  # The sender must remain stopped when running migrations during an upgrade.
+  migrate:
+    <<: *runtime
+    command: ["migrate"]
+    restart: "no"
+
+  web:
+    <<: *runtime
+    command: ["web"]
+    restart: unless-stopped
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    ports:
+      - "127.0.0.1:3035:3035"
+    healthcheck:
+      # HTTP readiness only. This does not certify SES, SNS, R2 or the worker.
+      test: ["CMD", "curl", "--fail", "--silent", "--max-time", "5", "http://127.0.0.1:3035/login"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  worker:
+    <<: *runtime
+    command: ["worker"]
+    restart: unless-stopped
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    stop_grace_period: 60s
+
+volumes:
+  # One local host, one web replica and exactly one worker. No NFS/SMB volume.
+  data:

@@ -1,0 +1,25 @@
+.git
+.hermes
+.agents
+.vibeletter
+**/node_modules
+**/.next
+**/dist
+**/out
+**/coverage
+**/*.tsbuildinfo
+**/next-env.d.ts
+**/.env*
+**/*.db
+**/*.db-*
+**/*.sqlite*
+# Runtime storage only. Do not omit app routes named data or uploads.
+data
+uploads
+apps/web/data
+apps/web/uploads
+**/*.pem
+**/*.key
+**/.DS_Store
+**/npm-debug.log*
+docs/screenshots

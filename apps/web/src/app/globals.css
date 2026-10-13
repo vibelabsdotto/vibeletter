@@ -1,0 +1,432 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  /* Product mark only. Retain the existing neutral UI and editor theme. */
+  --color-brand-coral: #ff6b4a;
+  --color-brand-ink: #16232e;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: "Geist", "Geist Fallback", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", "Geist Mono Fallback", ui-monospace, monospace;
+  --font-heading: "Geist", "Geist Fallback", ui-sans-serif, system-ui, sans-serif;
+  --shadow-border: var(--surface-shadow);
+  --shadow-border-hover: var(--surface-shadow-hover);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
+  --radius: 0.625rem;
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+  --surface-shadow: 0px 0px 0px 1px rgba(0, 0, 0, 0.06), 0px 1px 2px -1px rgba(0, 0, 0, 0.06),
+    0px 2px 4px 0px rgba(0, 0, 0, 0.04);
+  --surface-shadow-hover: 0px 0px 0px 1px rgba(0, 0, 0, 0.08), 0px 1px 2px -1px rgba(0, 0, 0, 0.08),
+    0px 2px 4px 0px rgba(0, 0, 0, 0.06);
+}
+
+.dark {
+  --surface-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08);
+  --surface-shadow-hover: 0 0 0 1px rgba(255, 255, 255, 0.13);
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.556 0 0);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans antialiased;
+  }
+  /* Tailwind v4 dropped the pointer cursor on buttons. */
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  summary,
+  select:not(:disabled),
+  input[type="file"]:not(:disabled),
+  input[type="checkbox"]:not(:disabled),
+  input[type="radio"]:not(:disabled) {
+    cursor: pointer;
+  }
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+  p {
+    text-wrap: pretty;
+  }
+}
+
+@keyframes enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+    filter: blur(2px);
+  }
+}
+
+@keyframes icon-in {
+  from {
+    opacity: 0;
+    scale: 0.25;
+    filter: blur(4px);
+  }
+}
+
+@utility animate-icon-in {
+  animation: icon-in 300ms cubic-bezier(0.2, 0, 0, 1);
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+@utility animate-enter {
+  animation: enter 400ms cubic-bezier(0.2, 0, 0, 1) both;
+  animation-delay: calc(var(--stagger, 0) * 80ms);
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+/* Streamed content taking its skeleton's place: same size, so it only fades. */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@utility animate-fade-in {
+  animation: fade-in 300ms cubic-bezier(0.2, 0, 0, 1) both;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+@utility bg-dots {
+  background-image: radial-gradient(
+    circle at 1px 1px,
+    color-mix(in oklab, var(--foreground) 14%, transparent) 1px,
+    transparent 0
+  );
+  background-size: 22px 22px;
+  mask-image: radial-gradient(ellipse 60% 70% at 50% 0%, black 20%, transparent 70%);
+}
+
+/* Archive issues: cleaned editor and Markdown HTML, so plain elements without classes. */
+.prose-issue {
+  font-size: 1.0625rem;
+  line-height: 1.75;
+  color: color-mix(in oklab, var(--foreground) 86%, transparent);
+  overflow-wrap: break-word;
+
+  & :where(p, ul, ol, table, blockquote, pre) {
+    margin: 0 0 1.25em;
+  }
+  & > :first-child {
+    margin-top: 0;
+  }
+  & :where(h1, h2, h3, h4) {
+    color: var(--foreground);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.3;
+    scroll-margin-top: 5rem;
+  }
+  & h1 {
+    font-size: 1.875rem;
+    margin: 2em 0 0.75em;
+  }
+  & h2 {
+    font-size: 1.5rem;
+    margin: 2em 0 0.75em;
+  }
+  & :where(h3, h4) {
+    font-size: 1.1875rem;
+    margin: 1.75em 0 0.5em;
+  }
+  & :where(b, strong) {
+    color: var(--foreground);
+    font-weight: 600;
+  }
+  & a {
+    color: var(--foreground);
+    font-weight: 500;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-decoration-color: color-mix(in oklab, var(--foreground) 30%, transparent);
+    text-underline-offset: 3px;
+    transition: text-decoration-color 150ms;
+  }
+  & a:hover {
+    text-decoration-color: currentColor;
+  }
+  & :where(ul, ol) {
+    padding-left: 1.4em;
+  }
+  & ul {
+    list-style: disc;
+  }
+  & ol {
+    list-style: decimal;
+  }
+  & li {
+    margin: 0.4em 0;
+    padding-left: 0.2em;
+  }
+  & li::marker {
+    color: var(--muted-foreground);
+  }
+  & li > p {
+    margin: 0;
+  }
+  & img {
+    margin: 2em auto;
+    border-radius: 0.75rem;
+    outline: 1px solid color-mix(in oklab, var(--foreground) 8%, transparent);
+    outline-offset: -1px;
+  }
+  /* Email images are drawn for a white page; transparent ones vanish on a dark one. */
+  .dark & img {
+    background: white;
+  }
+  & small {
+    display: block;
+    margin: -1.25em 0 2em;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    text-align: center;
+    color: var(--muted-foreground);
+  }
+  & small p {
+    margin: 0;
+  }
+  & blockquote {
+    padding-left: 1em;
+    border-left: 2px solid var(--border);
+    color: var(--muted-foreground);
+  }
+  /* Browsers paint marks bright yellow. */
+  & mark {
+    padding: 0.125em 0;
+    border-radius: 0.25em;
+    color: inherit;
+    background: #fff4d1;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+  }
+  .dark & mark {
+    background: color-mix(in oklab, #fff4d1 22%, transparent);
+  }
+  & [data-callout] {
+    margin: 2em 0;
+    padding: 1.5rem;
+    border-radius: 1rem;
+    background: var(--muted);
+  }
+  & [data-callout] > :first-child {
+    margin-top: 0;
+  }
+  & [data-callout] > :last-child {
+    margin-bottom: 0;
+  }
+  & hr {
+    margin: 3em 0;
+    border: 0;
+    border-top: 1px solid var(--border);
+  }
+  & table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9375rem;
+  }
+  & :where(th, td) {
+    padding: 0.5em 0.75em;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+    vertical-align: top;
+  }
+  & :where(code) {
+    font-family: var(--font-mono);
+    font-size: 0.875em;
+    padding: 0.15em 0.35em;
+    border-radius: 0.375rem;
+    background: var(--muted);
+  }
+}
+
+@keyframes uploading {
+  50% {
+    opacity: 0.3;
+  }
+}
+
+/* Campaign editor: the archive's typography, plus what writing needs. */
+.tiptap {
+  & :where(p, h1, h2, h3).is-empty::before {
+    content: attr(data-placeholder);
+    float: left;
+    height: 0;
+    pointer-events: none;
+    color: var(--muted-foreground);
+  }
+  & img {
+    max-width: 100%;
+    height: auto !important;
+  }
+  /* Tiptap wraps resizable images in a container that holds their handles. */
+  & [data-resize-container] {
+    justify-content: center;
+    margin: 2em 0;
+  }
+  & [data-resize-container] img {
+    margin: 0;
+  }
+  & img[src^="blob:"] {
+    opacity: 0.5;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    & img[src^="blob:"] {
+      animation: uploading 1.2s ease-in-out infinite;
+    }
+  }
+  & .ProseMirror-selectednode img {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+  & [data-resize-handle] {
+    width: 1rem;
+    cursor: ew-resize;
+    opacity: 0;
+    transition: opacity 150ms;
+  }
+  & [data-resize-handle]::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 5px;
+    height: min(3rem, 40%);
+    translate: -50% -50%;
+    border-radius: 999px;
+    background: white;
+    box-shadow:
+      0 0 0 1px rgb(0 0 0 / 0.2),
+      0 2px 6px rgb(0 0 0 / 0.25);
+  }
+  & .ProseMirror-selectednode [data-resize-handle],
+  & [data-resize-state="true"] [data-resize-handle] {
+    opacity: 1;
+  }
+  @media (hover: hover) {
+    & [data-resize-container]:hover [data-resize-handle] {
+      opacity: 1;
+    }
+  }
+  & hr.ProseMirror-selectednode {
+    border-top-color: var(--ring);
+  }
+}

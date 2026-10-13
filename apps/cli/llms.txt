@@ -1,0 +1,72 @@
+# VibeLetter CLI
+
+> Context-aware operator client. Node.js >=24, executable vibeletter, package @vibelabsdotto/vibeletter-cli.
+
+- Full guide: llms-full.txt
+- Machine-readable discovery: vibeletter catalog --json
+- Contexts: ~/.config/vibeletter/config.json and .vibeletter/config.json
+- Token input: env, private file, stdin. No token argv.
+- API: /api/v1, bearer auth, real errors, no automatic write retries.
+
+- vibeletter context set: Kontext anlegen oder ersetzen, Token nie als Argument
+- vibeletter context use: Standardkontext wählen
+- vibeletter context list: Kontexte auflisten, Tokens immer schwärzen
+- vibeletter context show: Kontext oder effektive Auswahl mit Token-Herkunft lesen
+- vibeletter context remove: Kontext und seine gespeicherten Zugangsdaten entfernen
+- vibeletter context verify: Health und authentifizierten API-Zugriff real prüfen
+- vibeletter catalog: Maschinenlesbare Befehle, Optionen und HTTP-Verträge ohne Netzwerk lesen
+- vibeletter health: Authentifizierte API-Readiness lesen
+- vibeletter readiness: Öffentliche Readiness ohne Token lesen
+- vibeletter overview: Operator-Übersicht lesen
+- vibeletter newsletters list: Einträge mit Paginierung auflisten
+- vibeletter newsletters get: Eintrag anhand seiner ID lesen
+- vibeletter newsletters create: Eintrag anlegen und die API-Antwort ausgeben
+- vibeletter newsletters update: Angegebene Felder mit PATCH ändern
+- vibeletter newsletters delete: Eintrag löschen, API prüft vorhandene Beziehungen
+- vibeletter newsletters welcome-test: Willkommensmail über den gemeinsamen Sender testen
+- vibeletter contacts list: Einträge mit Paginierung auflisten
+- vibeletter contacts get: Eintrag anhand seiner ID lesen
+- vibeletter contacts create: Eintrag anlegen und die API-Antwort ausgeben
+- vibeletter contacts update: Angegebene Felder mit PATCH ändern
+- vibeletter contacts delete: Eintrag löschen, API prüft vorhandene Beziehungen
+- vibeletter contacts status: Kontaktstatus ändern, active reaktiviert nur dormant
+- vibeletter contacts import: CSV oder JSON vollständig lesen und in höchstens 1000 Zeilen je Anfrage importieren
+- vibeletter contacts export: Alle Kontakte mit überprüfter Paginierung als CSV oder JSON exportieren
+- vibeletter campaigns list: Einträge mit Paginierung auflisten
+- vibeletter campaigns get: Eintrag anhand seiner ID lesen
+- vibeletter campaigns create: Eintrag anlegen und die API-Antwort ausgeben
+- vibeletter campaigns update: Angegebene Felder mit PATCH ändern
+- vibeletter campaigns delete: Entwurf verwerfen, kein physisches Löschen
+- vibeletter campaigns test: Testsendung über den gemeinsamen Sender anfordern
+- vibeletter campaigns send: Versand starten, nicht automatisch wiederholen
+- vibeletter campaigns schedule: Versand für einen Zeitpunkt mit Zeitzone planen
+- vibeletter campaigns unschedule: Geplanten Versand aufheben
+- vibeletter campaigns pause: Laufenden Versand pausieren
+- vibeletter campaigns resume: Pausierten Versand fortsetzen
+- vibeletter campaigns send-more: Noch nicht erreichte Kontakte anschreiben
+- vibeletter campaigns duplicate: Neuen Entwurf aus dieser Kampagne anlegen
+- vibeletter campaigns pin: Archiv-Pin ausdrücklich setzen oder entfernen
+- vibeletter campaigns archive-slug: Archiv-Slug setzen, leere Zeichenfolge entfernt einen Entwurfs-Slug
+- vibeletter campaigns discard: Entwurf verwerfen und geplanten Versand stoppen
+- vibeletter campaigns cleanup-preview: Listenbereinigung berechnen, ohne Versand
+- vibeletter campaigns preview: Gerendertes HTML lesen
+- vibeletter campaigns report: Versand- und Ereignisbericht lesen
+- vibeletter domains list: Einträge mit Paginierung auflisten
+- vibeletter domains account: SES-Account, Quoten und Versandfreigabe frisch lesen
+- vibeletter domains get: Domain und DNS-Einträge lesen
+- vibeletter domains dns: DNS-Anforderungen der Domain lesen
+- vibeletter domains create: Domain anlegen und echte DNS-Anforderungen ausgeben
+- vibeletter domains verify: Domain-Verifikation beim Provider neu prüfen
+- vibeletter keys list: Einträge mit Paginierung auflisten
+- vibeletter keys get: Schlüssel-Metadaten lesen, nie Klartext
+- vibeletter keys create: Schlüssel anlegen, Klartext nur in dieser API-Antwort
+- vibeletter keys revoke: Schlüssel widerrufen
+- vibeletter suppressions list: Einträge mit Paginierung auflisten
+- vibeletter suppressions get: Globale Versandsperre lesen
+- vibeletter suppressions add: Adresse global sperren
+- vibeletter suppressions remove: Globale Sperre entfernen, Kontaktstatus bleibt serverseitig geschützt
+- vibeletter queue list: Einträge mit Paginierung auflisten
+- vibeletter queue get: Auftrag anhand seiner positiven Dezimal-ID lesen
+- vibeletter queue retry: Fehlgeschlagenen Auftrag erneut anfordern, API verweigert unklare oder bereits akzeptierte Zustellung
+- vibeletter queue cancel: Auftrag abbrechen
+- vibeletter uploads create: Bildbytes aus Datei oder stdin hochladen, höchstens 4 MiB

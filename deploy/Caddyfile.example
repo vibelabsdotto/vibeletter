@@ -1,0 +1,10 @@
+# Host-installed Caddy example. Replace this hostname before use.
+# Port 3035 is bound to the host loopback interface by docker-compose.yaml.
+letter.example.com {
+    reverse_proxy 127.0.0.1:3035
+}
+
+# Optional separate archive origin. Match ARCHIVE_HOSTS and configure DNS/TLS.
+# news.example.com {
+#     reverse_proxy 127.0.0.1:3035
+# }

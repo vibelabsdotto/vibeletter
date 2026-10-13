@@ -1,0 +1,9 @@
+VibeLetter is an independent VibeLabs derivative of Mailcheap.
+Original project: https://github.com/marclou/mailcheap
+Upstream base: 67d13b028a6ecae9ec56d49c4b2db58019217eba
+Copyright (c) 2026 Marc Lou. Original code is licensed under MIT.
+The complete MIT license is included in /app/LICENSE.
+VibeLetter adaptation by VibeLabs.
+
+Bundled fonts retain their license under /app/apps/web/assets/fonts/OFL.txt.
+Third-party dependency licenses remain in their distributed packages.

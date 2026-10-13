@@ -1,0 +1,1 @@
+ALTER TABLE `messages` ADD `confirmation_nonce` text;
