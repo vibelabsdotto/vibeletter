@@ -2,14 +2,19 @@ import { and, count, eq, inArray, sql } from "drizzle-orm";
 import { SqliteQueue } from "liteque";
 import { z } from "zod";
 import { connectDb, db } from "@/db";
-import { campaigns, messages } from "@/db/schema";
+import { alerts, campaigns, messages } from "@/db/schema";
 import { getQueueDatabase } from "./connection";
 
 const QUEUE_NAME = "vibeletter";
 const OBJECT_ID = /^[a-fA-F0-9]{24}$/;
+export const ALERT_TITLE_MAX = 200;
+export const ALERT_TEXT_MAX = 10_000;
 export const jobSchema = z.discriminatedUnion("kind", [
 	z.object({ kind: z.literal("send-message"), messageId: z.string().regex(OBJECT_ID) }).strict(),
 	z.object({ kind: z.literal("scheduled-campaign"), campaignId: z.string().regex(OBJECT_ID), scheduledAt: z.iso.datetime() }).strict(),
+	// claimedAt is the alerts.lastSentAt cooldown claim. A newer claim on the same key supersedes this job.
+	z.object({ kind: z.literal("send-alert"), alertId: z.string().regex(OBJECT_ID), claimedAt: z.iso.datetime(),
+		title: z.string().min(1).max(ALERT_TITLE_MAX), text: z.string().max(ALERT_TEXT_MAX) }).strict(),
 ]);
 export type JobPayload = z.infer<typeof jobSchema>;
 export type JobStatus = "pending" | "pending_retry" | "running" | "failed";
@@ -38,6 +43,7 @@ function nativeRow(id: string): NativeRow | undefined {
 }
 
 function jobKey(payload: JobPayload): string {
+	if (payload.kind === "send-alert") return `alert:${payload.alertId}:${payload.claimedAt}`;
 	return payload.kind === "send-message" ? `message:${payload.messageId}` : `schedule:${payload.campaignId}:${payload.scheduledAt}`;
 }
 
@@ -70,6 +76,13 @@ export async function enqueueMessages(ids: readonly string[]): Promise<number> {
 	return unique.length;
 }
 
+export type AlertJob = Omit<Extract<JobPayload, { kind: "send-alert" }>, "kind">;
+
+/** Optional admin notices share the worker, global SES pacing and bounded retries. Priority matches tests/signups. */
+export async function enqueueAlert(job: AlertJob): Promise<string> {
+	return enqueue({ kind: "send-alert", ...job }, { priority: -10 });
+}
+
 export async function enqueueScheduledCampaign(campaignId: string, scheduledAt: Date): Promise<string> {
 	return enqueue({ kind: "scheduled-campaign", campaignId, scheduledAt: scheduledAt.toISOString() },
 		{ delayMs: Math.max(0, scheduledAt.getTime() - Date.now()), priority: -20 });
@@ -85,6 +98,10 @@ async function operatorJob(row: NativeRow): Promise<OperatorJob> {
 		await connectDb();
 		const message = db.select({ status: messages.status, error: messages.error }).from(messages).where(eq(messages._id, payload.messageId)).get();
 		if (message) { value.messageStatus = message.status; value.error = message.error; }
+	} else if (payload.kind === "send-alert") {
+		await connectDb();
+		const alert = db.select({ status: alerts.status, error: alerts.error, lastSentAt: alerts.lastSentAt }).from(alerts).where(eq(alerts._id, payload.alertId)).get();
+		if (alert?.lastSentAt?.toISOString() === payload.claimedAt) { value.messageStatus = alert.status ?? undefined; value.error = alert.error; }
 	}
 	return value;
 }
@@ -111,6 +128,7 @@ export async function retryJob(id: string): Promise<OperatorJob> {
 	if (!row) throw new QueueOperationError("Queue job not found", 404);
 	if (row.status !== "failed") throw new QueueOperationError("Only dead-letter jobs can be retried");
 	const payload = jobSchema.parse(JSON.parse(row.payload));
+	if (payload.kind === "send-alert") throw new QueueOperationError("Optional alert jobs are not retried manually. The next matching alert queues a new notice.");
 	await connectDb();
 	if (payload.kind === "send-message") {
 		db.transaction((tx) => {
@@ -161,6 +179,11 @@ export async function cancelJob(id: string): Promise<{ id: string; cancelled: tr
 			const { settleCampaign } = await import("@/lib/sending");
 			await settleCampaign(message.campaignId);
 		}
+	} else if (payload.kind === "send-alert") {
+		const fence = and(eq(alerts._id, payload.alertId), eq(alerts.lastSentAt, new Date(payload.claimedAt)));
+		const alert = db.select({ status: alerts.status }).from(alerts).where(fence).get();
+		if (alert && ["sending", "unknown"].includes(alert.status ?? "")) throw new QueueOperationError("In-flight or uncertain delivery cannot be cancelled");
+		db.update(alerts).set({ status: "skipped", error: "Cancelled by operator" }).where(and(fence, eq(alerts.status, "queued"))).run();
 	} else {
 		db.update(campaigns).set({ status: "draft", scheduledAt: null, updatedAt: new Date() }).where(and(
 			eq(campaigns._id, payload.campaignId), eq(campaigns.status, "scheduled"), eq(campaigns.scheduledAt, new Date(payload.scheduledAt)),

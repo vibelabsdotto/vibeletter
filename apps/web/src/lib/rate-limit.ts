@@ -69,9 +69,15 @@ export function reserveSendSlot(now = Date.now()): number {
 	}, { behavior: "immediate" });
 }
 
-/** Enable only behind a trusted proxy that strips client-supplied forwarding headers. */
+/**
+ * "true": a trusted proxy strips client-supplied forwarding headers.
+ * "cloudflare": Cloudflare sets CF-Connecting-IP. A request that bypasses Cloudflare can forge it.
+ */
 export function getClientIp(headers: Pick<Headers, "get">): string {
-	if (process.env.TRUST_PROXY !== "true") return "unknown";
-	const value = headers.get("x-forwarded-for")?.split(",")[0]?.trim() || headers.get("x-real-ip")?.trim();
+	const mode = process.env.TRUST_PROXY;
+	let value: string | undefined;
+	if (mode === "cloudflare") value = headers.get("cf-connecting-ip")?.trim();
+	else if (mode === "true") value = headers.get("x-forwarded-for")?.split(",")[0]?.trim() || headers.get("x-real-ip")?.trim();
+	else return "unknown";
 	return value && /^[0-9a-fA-F:.]+$/.test(value) && value.length <= 64 ? value : "unknown";
 }

@@ -6,6 +6,7 @@ export const createId = () => randomBytes(12).toString("hex");
 export const CONTACT_STATUSES = ["active", "pending", "unsubscribed", "bounced", "complained", "dormant"] as const;
 export const CAMPAIGN_STATUSES = ["draft", "scheduled", "sending", "paused", "sent", "canceled"] as const;
 export const MESSAGE_STATUSES = ["queued", "sending", "sent", "delivered", "bounced", "complained", "failed", "suppressed", "unknown"] as const;
+export const ALERT_STATUSES = ["queued", "sending", "sent", "failed", "skipped", "unknown"] as const;
 export const MESSAGE_KINDS = ["campaign", "last-chance", "welcome", "confirmation", "test"] as const;
 export type CampaignStats = { recipients: number; sent: number; delivered: number; bounced: number; complained: number; opened: number; clicked: number; unsubscribed: number; failed: number };
 export type LastChanceStats = { recipients: number; sent: number; delivered: number; bounced: number; complained: number; failed: number; dormant: number };
@@ -159,9 +160,12 @@ export const apiKeys = sqliteTable("api_keys", {
   revokedAt: integer("revoked_at", { mode: "timestamp_ms" }),
   ...timestamps(),
 });
+// lastSentAt is the cooldown claim and fences its queued notice. Legacy rows have no delivery status.
 export const alerts = sqliteTable("alerts", {
   _id: identity(), key: text("key").notNull().unique(), title: text("title"),
-  lastSentAt: integer("last_sent_at", { mode: "timestamp_ms" }), ...timestamps(),
+  lastSentAt: integer("last_sent_at", { mode: "timestamp_ms" }),
+  status: text("status", { enum: ALERT_STATUSES }), sesMessageId: text("ses_message_id"), error: text("error"),
+  ...timestamps(),
 });
 
 export const rateLimitBuckets = sqliteTable("rate_limit_buckets", {

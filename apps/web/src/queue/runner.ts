@@ -2,6 +2,7 @@ import { and, eq, inArray } from "drizzle-orm";
 import { RetryAfterError, Runner, type DequeuedJob, type DequeuedJobError } from "liteque";
 import { connectDb, db } from "@/db";
 import { campaigns, messages } from "@/db/schema";
+import { processAlert, recordAlertJobError } from "@/lib/alert-delivery";
 import { runScheduledSend } from "@/lib/scheduling";
 import { processMessage } from "@/lib/sending";
 import { enqueueMessage, enqueueScheduledCampaign, getNativeQueue, jobSchema, type JobPayload } from "./index";
@@ -44,6 +45,10 @@ async function runJob(job: DequeuedJob<JobPayload>): Promise<void> {
 		if ("failed" in result) throw new Error(result.failed);
 		return;
 	}
+	if (job.data.kind === "send-alert") {
+		await processAlert(job.data);
+		return;
+	}
 	const message = db.select().from(messages).where(eq(messages._id, job.data.messageId)).get();
 	if (message && ["failed", "unknown", "sending"].includes(message.status)) throw new Error(message.error || "Delivery requires operator reconciliation");
 	const result = await processMessage(job.data.messageId);
@@ -53,6 +58,7 @@ async function runJob(job: DequeuedJob<JobPayload>): Promise<void> {
 
 async function onJobError(job: DequeuedJobError<JobPayload>): Promise<void> {
 	console.error(`[worker] job=${job.id} run=${job.runNumber} retriesLeft=${job.numRetriesLeft} ${job.error.name}`);
+	if (job.data?.kind === "send-alert") return recordAlertJobError(job.data, job.numRetriesLeft);
 	if (!job.data || job.data.kind !== "send-message") return;
 	// An expired attempt can still be finishing its external request. Fencing queue finalization does
 	// not fence SES. Conservatively unknown rather than allowing any second delivery.

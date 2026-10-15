@@ -382,7 +382,7 @@ async function recordFailed(message: Message, error: unknown, expectedStatus: "q
 	return changed;
 }
 
-function isDefiniteRejection(error: unknown): boolean {
+export function isDefiniteRejection(error: unknown): boolean {
 	if (!(error instanceof Error)) return false;
 	if (error.message.startsWith("Sending is off")) return true;
 	const metadata = "$metadata" in error ? error.$metadata : undefined;

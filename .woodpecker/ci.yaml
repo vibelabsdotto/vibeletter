@@ -1,0 +1,76 @@
+# Push/manual on main runs the existing gates only. No secrets, no publish, no deploy.
+# Coolify deploys separately on push; this pipeline does not gate or trigger it.
+labels:
+  platform: linux/amd64
+  role: release
+
+when:
+  - event: [push, manual]
+    branch: main
+    ref: refs/heads/main
+    repo: vibelabsdotto/vibeletter
+
+clone:
+  - name: git
+    image: docker.io/woodpeckerci/plugin-git:2.10.0@sha256:0f06b03ec33137b556c77538563f66c400339052d0c5199d4c3ad1a2a37e1964
+    settings:
+      partial: false
+      depth: 0
+
+steps:
+  - name: install
+    # Full bookworm image: ships git, python3, make and g++, so better-sqlite3 can
+    # compile if no prebuilt binary matches. Nothing is installed via apt at runtime.
+    image: &node-image docker.io/library/node:24.22.0-bookworm@sha256:14078204b6bb268c107ceff6d3c43f45a888105e5c2b18b14c32b3409d93a1b0
+    environment:
+      NEXT_TELEMETRY_DISABLED: "1"
+    commands:
+      - node --version && npm --version
+      - npm ci --no-fund --no-audit
+      - node -e 'const D=require("better-sqlite3");const db=new D(":memory:");if(db.prepare("SELECT 1 AS ok").get().ok!==1)process.exit(1);db.close()'
+
+  - name: audit
+    image: *node-image
+    commands:
+      - npm audit --omit=dev
+
+  - name: test
+    image: *node-image
+    environment:
+      NEXT_TELEMETRY_DISABLED: "1"
+    commands:
+      # Runs without production environment variables.
+      - npm test
+
+  - name: typecheck
+    image: *node-image
+    environment:
+      NEXT_TELEMETRY_DISABLED: "1"
+    commands:
+      - npm run typecheck
+
+  - name: lint
+    image: *node-image
+    commands:
+      - npm run lint
+
+  - name: cli-docs
+    image: *node-image
+    commands:
+      - npm run build --workspace apps/cli
+      - npm run docs:check --workspace apps/cli
+
+  - name: build
+    image: *node-image
+    environment:
+      NEXT_TELEMETRY_DISABLED: "1"
+      # Non-secret, build-only values, identical to the Dockerfile build stage.
+      APP_URL: https://build.invalid
+      BETTER_AUTH_URL: https://build.invalid
+      ADMIN_EMAIL: build@build.invalid
+      BETTER_AUTH_SECRET: build-only-auth-value-not-a-runtime-secret
+      SESSION_SECRET: build-only-link-value-not-a-runtime-secret
+      SENDING_ENABLED: "false"
+    commands:
+      - npm run build
+      - test -f apps/web/.next/standalone/apps/web/server.js

@@ -9,6 +9,7 @@ Nicht geeignet sind Serverless-Instanzen, mehrere Hosts mit derselben Datenbank,
 - `Dockerfile` baut mit Node.js 24 LTS. Der Builder installiert auch Entwicklungsabhängigkeiten. Der Laufzeitcontainer nutzt Produktionsabhängigkeiten einschließlich nicht-hoistbarer Workspace-Abhängigkeiten und enthält Webserver, Workerquellen, Migrationen, Fonts und CLI. Der Imagebau öffnet die native SQLite-Laufzeit und führt die CLI-Hilfe aus, damit fehlende Runtime-Abhängigkeiten den Build abbrechen.
 - `.dockerignore` hält lokale Env-Dateien, Datenbanken, Buildverzeichnisse und Agent-Artefakte aus dem Build-Kontext.
 - `docker-compose.yaml` definiert `migrate`, `web` und `worker` mit demselben benannten Volume `vibeletter_data`.
+- `docker-compose.coolify.yaml` beschreibt dieselben drei Dienste für Coolify. Abschnitt [Betrieb mit Coolify](#betrieb-mit-coolify).
 - `deploy/production.env.example` ist eine Vorlage ohne Zugangsdaten.
 - `deploy/Caddyfile.example` ist ein Beispiel für einen auf dem Host installierten HTTPS-Proxy. Compose startet keinen Proxy und verwaltet kein DNS.
 
@@ -87,6 +88,36 @@ docker compose up -d --no-deps --force-recreate web worker
 ```
 
 Damit wird realer Versand freigegeben, auch für Willkommens-, Bestätigungs-, Test- und Alarmmails. Ein bloßer `restart` lädt veränderte Env-Dateien nicht in bestehende Container. Prüfe die Empfänger vor der Aktivierung. Die [SES-Anleitung](SES-DOMAINS.md) beschreibt Simulatoren und Feedbackabnahme.
+
+## Betrieb mit Coolify
+
+Coolify baut die App mit dem Build-Pack „Docker Compose“ aus dem Git-Repository: Base Directory `/`, Compose-Datei `/docker-compose.coolify.yaml`, Domain `https://<app-domain>:3035` am Dienst `web`. Die Portangabe sagt dem Coolify-Proxy nur den Containerport. Öffentlich bleibt es normales HTTPS. Für Domain und Proxy gelten weiter die Hinweise aus [HTTPS bereitstellen](#https-bereitstellen).
+
+Unterschiede zu `docker-compose.yaml`:
+
+- Kein `env_file` und kein veröffentlichter Hostport. Coolify schreibt alle Variablen der Ressource in eine `.env` und bindet sie an jeden Dienst. Der Proxy erreicht `web` über das Ressourcennetz.
+- `migrate` trägt `exclude_from_hc: true`. Der einmalige Container endet mit Exitcode 0 und bestimmt den Gesundheitsstatus nicht.
+- Coolify benennt das Volume in `<app-uuid>_vibeletter-data` um. Web, Worker und Migration nutzen dasselbe lokale Volume auf einem Host. Ändere den Volumenamen nicht nachträglich, sonst startet die App mit leerer Datenbank.
+- Ohne `image:` taggt Coolify die Images je Commit.
+
+Lege die Variablen aus `deploy/production.env.example` in Coolify als Runtime-Variablen an, nicht als Build-Variablen und nicht für Preview-Deployments. Lass Preview-Deployments aus, sonst entsteht eine zweite Instanz mit eigener Datenbank. Bei jedem Deployment stoppt Coolify zuerst die alten Container. Danach startet `docker compose up` die Migration, Web und Worker erst nach deren Erfolg.
+
+Hinter Cloudflare setzt du `TRUST_PROXY=cloudflare`. Die Rate-Limits zählen dann pro `CF-Connecting-IP`. Ohne den Wert teilen sich alle Besucher einen gemeinsamen Zähler. Wer den Origin direkt unter Umgehung von Cloudflare anspricht, kann diesen Header fälschen. Für eine harte Grenze muss der Origin nur Cloudflare annehmen.
+
+Alle Mails, auch Alarmmails, verschickt ausschließlich der laufende Worker aus der Queue. Ohne Worker bleiben sie dort liegen.
+
+Den Operator provisionierst du per SSH auf dem Coolify-Host im laufenden Webcontainer:
+
+```bash
+container=$(docker ps --filter "name=web-<app-uuid>" --format '{{.Names}}')
+set -o pipefail
+IFS= read -r -s -p 'Operator-Passwort: ' operator_password
+printf '\n'
+printf '%s' "$operator_password" | docker exec -i "$container" vibeletter-entrypoint provision --password-stdin
+unset operator_password
+```
+
+Für den Versand setzt du `SENDING_ENABLED=true` in Coolify und startest die App über Coolify neu. Ein Redeploy rollt zusätzlich den aktuellen Commit aus. Die Abnahme oben gilt unverändert.
 
 ## CLI für den Betrieb
 

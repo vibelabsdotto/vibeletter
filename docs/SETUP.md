@@ -126,7 +126,8 @@ Cloudflare-Referenz: [R2-S3-Authentifizierung und Tokenberechtigungen](https://d
 | `R2_PUBLIC_URL` | Optionale echte öffentliche HTTPS-Asset-URL. Leer für Bildabruf über die App. |
 | `UPLOAD_LOCAL_DIR` | Nur beim expliziten lokalen Entwicklungstransport. |
 | `ARCHIVE_HOSTS` | Optional, beispielsweise `news.example.com=weekly,news.example.org=monthly`. DNS und TLS separat konfigurieren. |
-| `ALERT_FROM` | Optionaler Alarm-Absender, muss von einer erlaubten SES-Identität gedeckt sein. Kein Ersatz für externes Monitoring. |
+| `TRUST_PROXY` | Client-IP für Rate-Limits. `cloudflare` liest `CF-Connecting-IP`, `true` den ersten `X-Forwarded-For`-Eintrag eines vertrauenswürdigen Proxys. Leer zählt alle Clients gemeinsam. |
+| `ALERT_FROM` | Optionaler Alarm-Absender, muss von einer erlaubten SES-Identität gedeckt sein. Alarmmails gehen über Queue und Worker, also nur bei laufendem Worker und `SENDING_ENABLED=true`. Kein Ersatz für externes Monitoring. |
 
 ## CLI und Prüfungen
 

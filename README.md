@@ -100,6 +100,8 @@ Before the first CLI invocation, run `npm run build --workspace apps/cli` or the
 
 Do not use `drizzle-kit push` in place of the committed migration history. Web startup does not replace an explicit migration step.
 
+Every push to `main` runs [Woodpecker CI](.woodpecker/ci.yaml) on `ci.vibelabs.to`: `npm ci`, `npm audit --omit=dev`, tests, typecheck, lint, the CLI docs check and the production build. CI only checks; it does not deploy and uses no secrets.
+
 ## Data and mail boundaries
 
 Each newsletter has its own sender, reply-to address and public archive settings. Separate domains in the same AWS account and region share SES quotas and reputation constraints. SES identity verification does not create a receiving inbox. A reply-to address needs a real mailbox or forwarding service.

@@ -1,0 +1,88 @@
+# Coolify "Docker Compose" build pack. Local hosts use docker-compose.yaml.
+# Coolify writes its runtime variables to .env and injects that file into every
+# service, so this file has no env_file and publishes no host port: the Coolify
+# proxy routes the domain to web:3035 on the resource network.
+services:
+  # Official application and queue migrations run before either process.
+  # Coolify stops the old web and worker containers before `up`, so the
+  # migration never runs next to a sender from the previous release.
+  migrate:
+    build:
+      context: .
+      target: runtime
+    command: ["migrate"]
+    restart: "no"
+    # One-shot container; it exits 0 and must not mark the resource unhealthy.
+    exclude_from_hc: true
+    environment:
+      NODE_ENV: production
+      DEV_LOGIN_ENABLED: "false"
+      DATABASE_PATH: /app/data/vibeletter.db
+      QUEUE_DATABASE_PATH: /app/data/queue.db
+    volumes:
+      - vibeletter-data:/app/data
+    init: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+
+  web:
+    build:
+      context: .
+      target: runtime
+    command: ["web"]
+    restart: unless-stopped
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      NODE_ENV: production
+      DEV_LOGIN_ENABLED: "false"
+      DATABASE_PATH: /app/data/vibeletter.db
+      QUEUE_DATABASE_PATH: /app/data/queue.db
+    volumes:
+      - vibeletter-data:/app/data
+    expose:
+      - "3035"
+    healthcheck:
+      # HTTP readiness only. This does not certify SES, SNS, R2 or the worker.
+      test: ["CMD", "curl", "--fail", "--silent", "--output", "/dev/null", "--max-time", "5", "http://127.0.0.1:3035/login"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+      start_interval: 5s
+    init: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+
+  worker:
+    build:
+      context: .
+      target: runtime
+    command: ["worker"]
+    restart: unless-stopped
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      NODE_ENV: production
+      DEV_LOGIN_ENABLED: "false"
+      DATABASE_PATH: /app/data/vibeletter.db
+      QUEUE_DATABASE_PATH: /app/data/queue.db
+    volumes:
+      - vibeletter-data:/app/data
+    stop_grace_period: 60s
+    init: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+
+volumes:
+  # Coolify renames this to <app-uuid>_vibeletter-data. One local host, one web
+  # replica and exactly one worker share it. No NFS/SMB volume.
+  vibeletter-data:

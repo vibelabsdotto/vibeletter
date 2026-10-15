@@ -110,7 +110,7 @@ export class Client {
     // Queue inspection returns the delivery error as data, not as an API error envelope.
     const queueJob = method === 'GET' && /^\/queue\/[1-9][0-9]*$/.test(route)
       && record?.id === route.slice('/queue/'.length)
-      && ['send-message', 'scheduled-campaign'].includes(String(record?.kind))
+      && ['send-message', 'scheduled-campaign', 'send-alert'].includes(String(record?.kind))
       && ['pending', 'pending_retry', 'running', 'failed'].includes(String(record?.status))
       && typeof record?.error === 'string';
     if (!response.ok || (record?.error && !queueJob) || record?.ok === false) {
