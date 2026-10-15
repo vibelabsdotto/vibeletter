@@ -19,11 +19,24 @@ export const migrationsFolder = resolve(process.cwd(), "drizzle");
 // Next development reloads reuse the same connection, not a growing pool of SQLite handles.
 type Connection = ReturnType<typeof openConnection>;
 const cache = globalThis as typeof globalThis & { vibeletterSqliteConnections?: Map<string, Connection> };
+// Concurrent first opens (parallel `next build` workers on a fresh file) can all request the
+// exclusive WAL switch. SQLite then returns SQLITE_BUSY without waiting, so retry briefly.
+function enableWal(connection: Database.Database) {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      if (connection.pragma("journal_mode", { simple: true }) !== "wal") connection.pragma("journal_mode = WAL");
+      return;
+    } catch (error) {
+      if ((error as { code?: string }).code !== "SQLITE_BUSY" || attempt >= 100) throw error;
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 10 + Math.random() * 40);
+    }
+  }
+}
 function openConnection() {
   mkdirSync(dirname(databasePath), { recursive: true });
   const connection = new Database(databasePath);
   connection.pragma("busy_timeout = 5000");
-  connection.pragma("journal_mode = WAL");
+  enableWal(connection);
   connection.pragma("foreign_keys = ON");
   return { sqlite: connection, db: drizzle(connection, { schema: { ...schema, ...authSchema } }) };
 }
